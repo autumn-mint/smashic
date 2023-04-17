@@ -7,10 +7,5 @@ Repositorio para el ranking de Magic de Smash Uruguay
 - El archivo .pbix es el dashboard que visualiza la informacion que recibe de la DB
 
 ## To-dos
-### Local
-- Limpiar el codigo (agregar variables de DB, hacer los inserts juntos)
-- Agregar dashboard de jugador
-- Dashboards visualmente lindos
-
 ### Remoto
 - Digan ustedes - REST API, backend, lo que quieran hacer, lo dejo a su criterio
