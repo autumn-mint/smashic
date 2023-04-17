@@ -54,10 +54,13 @@ else:
 # Inicializar diccionario
 d = {}
 
+print("---------------------")
+print("Descargando jugadores")
+print("---------------------")
+
 # Extraer data reciente de la base
 for searched in range(0,len(players)):
     print("Descargando data del jugador "+players[searched])
-    print('')
     output = conn.execute("select mu,sigma from player where name = '"+players[searched]+"' and newest = 'Y'")
     rows = output.fetchall()
     if rows == []:
@@ -67,7 +70,6 @@ for searched in range(0,len(players)):
             output = conn.execute("select mu,sigma from player where name = '"+players[searched]+"' and newest = 'Y'")
             rows = output.fetchall()
             print('Nuevo jugador agregado y procesado: ' + players[searched])
-            print('')
         else:
             print('Abortando import')
             quit()
@@ -84,14 +86,7 @@ r4 = trueskill.Rating(mu=d.get("mu4"), sigma=d.get("sigma4"))
 rating_groups = [(r1,), (r2,), (r3,), (r4,)]
 rated_rating_groups = trueskill.rate(rating_groups, ranks=[0, 1, 1, 1])
 (r1,), (r2,), (r3,), (r4,) = rated_rating_groups
-new_rankings = [r1, r2, r3, r4]
-
-# Borrar flags de newest e insertar los rankings nuevos
-for searched in range(0,len(players)):
-    print("Subiendo al jugador "+players[searched])
-    print('')
-    output = conn.execute("update player set newest = null where name = '"+players[searched]+"' and newest = 'Y'")
-    query = conn.execute("insert into player values ('" + players[searched] + "','" + str(round(new_rankings[searched].mu,3)) + "','" + str(round(new_rankings[searched].sigma,3)) + "','" + date.today().strftime("%d-%b-%Y") + "','" + str(match_number) + "','Y','" + str(round(new_rankings[searched].mu,3) - 3*round(new_rankings[searched].sigma,3)) + "')")
+player_rankings = [r1, r2, r3, r4]
 
 #-----------------
 # Calculos decks
@@ -99,10 +94,13 @@ for searched in range(0,len(players)):
 # Inicializar diccionario
 d = {}
 
+print("-----------------")
+print("Descargando decks")
+print("-----------------")
+
 # Extraer data reciente de la base
 for searched in range(0,len(decks)):
     print("Descargando data del mazo "+decks[searched])
-    print('')
     output = conn.execute("select mu,sigma from deck where name = '"+decks[searched]+"' and newest = 'Y'")
     rows = output.fetchall()
     if rows == []:
@@ -112,7 +110,6 @@ for searched in range(0,len(decks)):
             output = conn.execute("select mu,sigma from deck where name = '"+decks[searched]+"' and newest = 'Y'")
             rows = output.fetchall()
             print('Nuevo mazo agregado y procesado: ' + decks[searched])
-            print('')
         else:
             print('Abortando import')
             quit()
@@ -129,14 +126,28 @@ r4 = trueskill.Rating(mu=d.get("mu4"), sigma=d.get("sigma4"))
 rating_groups = [(r1,), (r2,), (r3,), (r4,)]
 rated_rating_groups = trueskill.rate(rating_groups, ranks=[0, 1, 1, 1])
 (r1,), (r2,), (r3,), (r4,) = rated_rating_groups
-new_rankings = [r1, r2, r3, r4]
+deck_rankings = [r1, r2, r3, r4]
 
-# Insertar rankings nuevos
+print("------------------")
+print("Cargando jugadores")
+print("------------------")
+
+# Borrar flags de newest e insertar los rankings nuevos
+for searched in range(0,len(players)):
+    print("Subiendo al jugador "+players[searched])
+    output = conn.execute("update player set newest = null where name = '"+players[searched]+"' and newest = 'P'")
+    output = conn.execute("update player set newest = 'P' where name = '"+players[searched]+"' and newest = 'Y'")
+    query = conn.execute("insert into player values ('" + players[searched] + "','" + str(round(player_rankings[searched].mu,3)) + "','" + str(round(player_rankings[searched].sigma,3)) + "','" + date.today().strftime("%d-%b-%Y") + "','" + str(match_number) + "','Y','" + str(round(player_rankings[searched].mu,3) - 3*round(player_rankings[searched].sigma,3)) + "')")
+
+print("--------------")
+print("Cargando decks")
+print("--------------")
+
 for searched in range(0,len(decks)):
     print("Subiendo al mazo "+decks[searched])
-    print('')
-    output = conn.execute("update deck set newest = null where name = '"+decks[searched]+"' and newest = 'Y'")
-    query = conn.execute("insert into deck values ('" + decks[searched] + "','" + str(round(new_rankings[searched].mu,3)) + "','" + str(round(new_rankings[searched].sigma,3)) + "','" + date.today().strftime("%d-%b-%Y") + "','" + str(match_number) + "','Y','" + str(round(new_rankings[searched].mu,3) - 3*round(new_rankings[searched].sigma,3)) + "')")
+    output = conn.execute("update deck set newest = null where name = '"+decks[searched]+"' and newest = 'P'")
+    output = conn.execute("update deck set newest = 'P' where name = '"+decks[searched]+"' and newest = 'Y'")
+    query = conn.execute("insert into deck values ('" + decks[searched] + "','" + str(round(deck_rankings[searched].mu,3)) + "','" + str(round(deck_rankings[searched].sigma,3)) + "','" + date.today().strftime("%d-%b-%Y") + "','" + str(match_number) + "','Y','" + str(round(deck_rankings[searched].mu,3) - 3*round(deck_rankings[searched].sigma,3)) + "')")
     
 #-------------------------
 # Insertar data del match
